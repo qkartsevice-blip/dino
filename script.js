@@ -1,20 +1,27 @@
-document.addEventListener('DOMContentLoaded', () => {
+// 🏆🏆🏆 你從 Firebase 複製的設定程式碼 🏆🏆🏆
+const firebaseConfig = {
+  apiKey: "AIzaSyDdU5ur3-Y_N18C-XowZYOtMBW5tMkywBQ",
+  authDomain: "cargameleaderboard-c5420.firebaseapp.com",
+  projectId: "cargameleaderboard-c5420",
+  storageBucket: "cargameleaderboard-c5420.firebasestorage.app",
+  messagingSenderId: "1084071115619",
+  appId: "1:1084071115619:web:630750143f56546e65f156",
+  measurementId: "G-2CES65P4N3"
+};
 
-    // 🏆🏆🏆 你從 Firebase 複製的設定程式碼 🏆🏆🏆
-    const firebaseConfig = {
-      apiKey: "AIzaSyDdU5ur3-Y_N18C-XowZYOtMBW5tMkywBQ",
-      authDomain: "cargameleaderboard-c5420.firebaseapp.com",
-      projectId: "cargameleaderboard-c5420",
-      storageBucket: "cargameleaderboard-c5420.firebasestorage.app",
-      messagingSenderId: "1084071115619",
-      appId: "1:1084071115619:web:630750143f56546e65f156",
-      measurementId: "G-2CES65P4N3"
-    };
-
-    // 初始化 Firebase 和 Firestore
+// 初始化 Firebase 和 Firestore
+// 修正：將初始化程式碼移到 DOMContentLoaded 事件之外
+if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    var db = firebase.firestore();
+    console.log("Firebase 已成功初始化！");
+} else {
+    var db = null;
+    console.warn("Firebase 設定遺失，將使用瀏覽器本地儲存。請在 index.html 中引入 Firebase 函式庫以啟用全域排行榜。");
+}
 
+document.addEventListener('DOMContentLoaded', () => {
+    
     const gameContainer = document.getElementById('game-container');
     const playerCar = document.getElementById('player-car');
     const scoreDisplay = document.getElementById('score');
@@ -47,6 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 處理最高分數的函式
     async function saveScoreToDB(currentScore, username) {
+        if (!db) {
+            console.error("Firebase 資料庫未初始化。無法儲存分數。");
+            return;
+        }
         try {
             await db.collection("highScores").add({
                 name: username || '匿名玩家',
@@ -60,6 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function getHighScoresFromDB() {
+        if (!db) {
+            console.error("Firebase 資料庫未初始化。無法讀取排行榜。");
+            return [];
+        }
         try {
             loadingSpinner.classList.remove('hidden');
             const scoresRef = db.collection("highScores").orderBy("score", "desc").limit(7);
