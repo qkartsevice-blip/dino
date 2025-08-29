@@ -10,15 +10,8 @@ const firebaseConfig = {
 };
 
 // 初始化 Firebase 和 Firestore
-// 修正：將初始化程式碼移到 DOMContentLoaded 事件之外
-if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
-    firebase.initializeApp(firebaseConfig);
-    var db = firebase.firestore();
-    console.log("Firebase 已成功初始化！");
-} else {
-    var db = null;
-    console.warn("Firebase 設定遺失，將使用瀏覽器本地儲存。請在 index.html 中引入 Firebase 函式庫以啟用全域排行榜。");
-}
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -54,10 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 處理最高分數的函式
     async function saveScoreToDB(currentScore, username) {
-        if (!db) {
-            console.error("Firebase 資料庫未初始化。無法儲存分數。");
-            return;
-        }
         try {
             await db.collection("highScores").add({
                 name: username || '匿名玩家',
@@ -71,10 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function getHighScoresFromDB() {
-        if (!db) {
-            console.error("Firebase 資料庫未初始化。無法讀取排行榜。");
-            return [];
-        }
         try {
             loadingSpinner.classList.remove('hidden');
             const scoresRef = db.collection("highScores").orderBy("score", "desc").limit(7);
@@ -346,52 +331,3 @@ document.addEventListener('DOMContentLoaded', () => {
                 movePlayerCar('left');
             } else if (e.code === 'ArrowRight') {
                 movePlayerCar('right');
-            }
-        }
-    });
-
-    leftBtn.addEventListener('click', () => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            movePlayerCar('left');
-        }
-    });
-
-    rightBtn.addEventListener('click', () => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            movePlayerCar('right');
-        }
-    });
-
-    function spawnRandomObject() {
-        if (isGameOver || !introOverlay.classList.contains('hidden')) return;
-
-        const randomNumber = Math.random();
-        if (randomNumber < 0.6) {
-            createObstacle();
-        } else if (randomNumber < 0.8) {
-            createCoin();
-        } else {
-            createPothole();
-        }
-
-        const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
-        setTimeout(spawnRandomObject, nextSpawnInterval);
-    }
-    
-    function startGame() {
-        introOverlay.classList.add('hidden');
-        gameOverScreen.classList.add('hidden');
-        createLanes();
-        spawnRandomObject();
-    }
-
-    startBtn.addEventListener('click', () => {
-        startGame();
-    });
-
-    restartBtn.addEventListener('click', () => {
-        location.reload();
-    });
-
-    createLanes();
-});
