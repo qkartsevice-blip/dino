@@ -6,6 +6,30 @@
 </head>
 <body>
     <div id="game-container">
+        <div id="intro-overlay">
+            <h1>小汽車遊戲</h1>
+            <label for="username">輸入你的名字:</label>
+            <input type="text" id="username" placeholder="匿名玩家" maxlength="10">
+            <div id="intro-text-box">
+                <p class="main-rules">左右移動或點擊虛擬鍵盤</p>
+                <p class="main-rules">避開藍色車輛及坑洞</p>
+                <br>
+                <p class="sub-rules">收集金幣 (+5分)</p>
+                <p class="sub-rules">避開車輛 (+1分)</p>
+                <p class="sub-rules">碰到坑洞 (-5分)</p>
+                <p class="sub-rules">碰到車輛或分數低於0分遊戲結束</p>
+            </div>
+            <button id="start-btn">開始遊戲</button>
+        </div>
+
+        <div id="game-over-screen" class="hidden">
+            <h1>遊戲結束</h1>
+            <p>你的分數: <span id="final-score">0</span></p>
+            <h2>排行榜</h2>
+            <ul id="high-scores-list"></ul>
+            <button id="restart-btn">重新開始</button>
+        </div>
+
         <img id="player-car" src="images/red-car.png" alt="Player Car">
         <div class="text-overlay">分數: <span id="score">0</span></div>
     </div>
