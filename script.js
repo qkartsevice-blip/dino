@@ -10,8 +10,15 @@ const firebaseConfig = {
 };
 
 // 初始化 Firebase 和 Firestore
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// 修正：移除舊的條件判斷，直接初始化
+if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.firestore();
+} else {
+    // 如果沒有 Firebase，遊戲將無法使用全域排行榜功能
+    var db = null;
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -45,8 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
         '225': null
     };
 
-    // 處理最高分數的函式
+    // 處理最高分數的函式（直接與 Firebase 互動）
     async function saveScoreToDB(currentScore, username) {
+        if (!db) {
+            console.error("Firebase 資料庫未初始化。無法儲存分數。");
+            return;
+        }
         try {
             await db.collection("highScores").add({
                 name: username || '匿名玩家',
@@ -60,6 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function getHighScoresFromDB() {
+        if (!db) {
+            console.error("Firebase 資料庫未初始化。無法讀取排行榜。");
+            return [];
+        }
         try {
             loadingSpinner.classList.remove('hidden');
             const scoresRef = db.collection("highScores").orderBy("score", "desc").limit(7);
@@ -331,3 +346,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 movePlayerCar('left');
             } else if (e.code === 'ArrowRight') {
                 movePlayerCar('right');
+            }
+        }
+    });
+
+    leftBtn.addEventListener('click', () => {
+        if (!isGameOver && introOverlay.classList.contains('hidden')) {
+            movePlayerCar('left');
+        }
+    });
+
+    rightBtn.addEventListener('click', () => {
+        if (!isGameOver && introOverlay.classList.contains('hidden')) {
+            movePlayerCar('right');
+        }
+    });
+
+    function spawnRandomObject() {
+        if (isGameOver || !introOverlay.classList.contains('hidden')) return;
+
+        const randomNumber = Math.random();
+        if (randomNumber < 0.6) {
+            createObstacle();
+        } else if (randomNumber < 0.8) {
+            createCoin();
+        } else {
+            createPothole();
+        }
+
+        const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
+        setTimeout(spawnRandomObject, nextSpawnInterval);
+    }
+    
+    function startGame() {
+        introOverlay.classList.add('hidden');
+        gameOverScreen.classList.add('hidden');
+        createLanes();
+        spawnRandomObject();
+    }
+
+    startBtn.addEventListener('click', () => {
+        startGame();
+    });
+
+    restartBtn.addEventListener('click', () => {
+        location.reload();
+    });
+
+    createLanes();
+});
