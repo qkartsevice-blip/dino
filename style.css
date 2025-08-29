@@ -23,10 +23,10 @@ body {
 }
 
 .obstacle {
-    width: 70px; /* 已放大，與玩家車子尺寸相同 */
-    height: 110px; /* 已放大，與玩家車子尺寸相同 */
+    width: 70px;
+    height: 110px;
     position: absolute;
-    top: -110px; /* 調整生成位置，確保從畫面外開始 */
+    top: -110px;
 }
 
 .obstacle img {
@@ -72,4 +72,16 @@ body {
 @keyframes move-lane {
     from { top: 0; }
     to { top: 50px; }
+}
+
+/* 金幣樣式，使用你的 coin.png 圖片 */
+.coin {
+    width: 30px;
+    height: 30px;
+    background-image: url('images/coin.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: absolute;
+    top: -30px;
 }
