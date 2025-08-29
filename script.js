@@ -5,6 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreDisplay = document.getElementById('score');
     const leftBtn = document.getElementById('left-btn');
     const rightBtn = document.getElementById('right-btn');
+    const introOverlay = document.getElementById('intro-overlay');
+    const startBtn = document.getElementById('start-btn');
+    const gameOverScreen = document.getElementById('game-over-screen');
+    const finalScoreDisplay = document.getElementById('final-score');
+    const highScoresList = document.getElementById('high-scores-list');
+    const restartBtn = document.getElementById('restart-btn');
+    const usernameInput = document.getElementById('username');
 
     let score = 0;
     let baseSpeed = 5;
@@ -24,6 +31,69 @@ document.addEventListener('DOMContentLoaded', () => {
         '225': null
     };
 
+    // 處理最高分數的函式
+    function getHighScores() {
+        return JSON.parse(localStorage.getItem('highScores')) || [];
+    }
+
+    function saveHighScores(scores) {
+        localStorage.setItem('highScores', JSON.stringify(scores));
+    }
+
+    function updateHighScores(currentScore, username) {
+        let scores = getHighScores();
+        const newScore = { score: currentScore, name: username || '匿名玩家' };
+        scores.push(newScore);
+        scores.sort((a, b) => b.score - a.score);
+        scores = scores.slice(0, 7); // 修正：只保留前 7 名
+        saveHighScores(scores);
+        return scores;
+    }
+
+    function displayHighScores() {
+        const scores = getHighScores();
+        highScoresList.innerHTML = '';
+        for (let i = 0; i < 7; i++) { // 修正：迴圈 7 次
+            const li = document.createElement('li');
+
+            if (scores[i]) {
+                const trophy = document.createElement('span');
+                trophy.classList.add('trophy');
+
+                if (i === 0) {
+                    trophy.textContent = '🥇'; 
+                } else if (i === 1) {
+                    trophy.textContent = '🥈';
+                } else if (i === 2) {
+                    trophy.textContent = '🥉';
+                }
+
+                if (i < 3) {
+                    li.appendChild(trophy);
+                }
+                const textNode = document.createTextNode(`${i + 1}. ${scores[i].name}: ${scores[i].score}`);
+                li.appendChild(textNode);
+            } else {
+                li.textContent = `${i + 1}. --`;
+            }
+
+            highScoresList.appendChild(li);
+        }
+    }
+
+    function endGame() {
+        isGameOver = true;
+        
+        introOverlay.classList.add('hidden');
+        gameOverScreen.classList.remove('hidden');
+
+        finalScoreDisplay.textContent = score;
+
+        const username = usernameInput.value;
+        updateHighScores(score, username);
+        displayHighScores();
+    }
+
     function createLanes() {
         const lane1 = document.createElement('div');
         const lane2 = document.createElement('div');
@@ -33,14 +103,35 @@ document.addEventListener('DOMContentLoaded', () => {
         gameContainer.appendChild(lane2);
     }
 
-    // 尋找一個隨機且可用的車道
     function getRandomAvailableLane() {
         const availableLanes = Object.keys(laneStatus).filter(lane => laneStatus[lane] === null);
         if (availableLanes.length === 0) {
-            return null; // 如果沒有可用的車道
+            return null;
         }
         const randomLane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
         return randomLane;
+    }
+
+    function showScoreFeedback(value, type) {
+        const feedback = document.createElement('div');
+        feedback.textContent = (value > 0 ? '+' : '') + value;
+        feedback.classList.add('score-feedback', type === 'positive' ? 'positive' : 'negative');
+
+        feedback.style.left = (playerCar.offsetLeft + playerCar.offsetWidth / 2 - feedback.offsetWidth / 2) + 'px';
+        feedback.style.top = (playerCar.offsetTop - 30) + 'px';
+
+        gameContainer.appendChild(feedback);
+
+        feedback.addEventListener('animationend', () => {
+            feedback.remove();
+        });
+    }
+
+    function shakeScreen() {
+        gameContainer.classList.add('shake-animation');
+        gameContainer.addEventListener('animationend', () => {
+            gameContainer.classList.remove('shake-animation');
+        }, { once: true });
     }
 
     function createObstacle() {
@@ -70,9 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 playerCarRect.top < obstacleRect.bottom - collisionPadding &&
                 playerCarRect.bottom > obstacleRect.top + collisionPadding
             ) {
-                isGameOver = true;
-                alert("遊戲結束! 你的分數是: " + score);
-                location.reload();
+                endGame();
                 return;
             }
 
@@ -124,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 laneStatus[lane] = null;
                 score += 5;
                 scoreDisplay.textContent = score;
+                showScoreFeedback(5, 'positive');
                 return;
             }
 
@@ -141,7 +231,58 @@ document.addEventListener('DOMContentLoaded', () => {
         animateCoin();
     }
 
-    // 玩家車移動函數
+    function createPothole() {
+        const lane = getRandomAvailableLane();
+        if (!lane) return;
+
+        const pothole = document.createElement('div');
+        pothole.classList.add('pothole');
+        pothole.style.left = lane + 'px';
+        gameContainer.appendChild(pothole);
+
+        laneStatus[lane] = 'pothole';
+
+        let topPosition = -40;
+        function animatePothole() {
+            if (isGameOver) return;
+
+            const playerCarRect = playerCar.getBoundingClientRect();
+            const potholeRect = pothole.getBoundingClientRect();
+
+            if (
+                playerCarRect.left < potholeRect.right &&
+                playerCarRect.right > potholeRect.left &&
+                playerCarRect.top < potholeRect.bottom &&
+                playerCarRect.bottom > potholeRect.top
+            ) {
+                pothole.remove();
+                laneStatus[lane] = null;
+                score -= 5;
+                scoreDisplay.textContent = score;
+                showScoreFeedback(-5, 'negative');
+                shakeScreen();
+                
+                if (score < 0) {
+                    endGame();
+                    return;
+                }
+                return;
+            }
+
+            if (topPosition > 500) {
+                pothole.remove();
+                laneStatus[lane] = null;
+                return;
+            }
+            
+            topPosition += speed;
+            pothole.style.top = topPosition + 'px';
+
+            requestAnimationFrame(animatePothole);
+        }
+        animatePothole();
+    }
+
     function movePlayerCar(direction) {
         if (isGameOver) return;
     
@@ -160,39 +301,58 @@ document.addEventListener('DOMContentLoaded', () => {
         playerCar.style.left = playerCarPosition + 'px';
     }
 
-    // 鍵盤控制
     document.addEventListener('keydown', (e) => {
-        if (e.code === 'ArrowLeft') {
+        if (!isGameOver && introOverlay.classList.contains('hidden')) {
+            if (e.code === 'ArrowLeft') {
+                movePlayerCar('left');
+            } else if (e.code === 'ArrowRight') {
+                movePlayerCar('right');
+            }
+        }
+    });
+
+    leftBtn.addEventListener('click', () => {
+        if (!isGameOver && introOverlay.classList.contains('hidden')) {
             movePlayerCar('left');
-        } else if (e.code === 'ArrowRight') {
+        }
+    });
+
+    rightBtn.addEventListener('click', () => {
+        if (!isGameOver && introOverlay.classList.contains('hidden')) {
             movePlayerCar('right');
         }
     });
 
-    // 虛擬按鍵控制
-    leftBtn.addEventListener('click', () => {
-        movePlayerCar('left');
-    });
-
-    rightBtn.addEventListener('click', () => {
-        movePlayerCar('right');
-    });
-
-    // 隨機生成物件（障礙物或金幣）
     function spawnRandomObject() {
-        if (isGameOver) return;
+        if (isGameOver || !introOverlay.classList.contains('hidden')) return;
 
-        // 隨機決定生成障礙物或金幣 (例如 70% 機率生成障礙物)
-        if (Math.random() > 0.3) {
+        const randomNumber = Math.random();
+        if (randomNumber < 0.6) {
             createObstacle();
-        } else {
+        } else if (randomNumber < 0.8) {
             createCoin();
+        } else {
+            createPothole();
         }
 
         const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
         setTimeout(spawnRandomObject, nextSpawnInterval);
     }
+    
+    function startGame() {
+        introOverlay.classList.add('hidden');
+        gameOverScreen.classList.add('hidden');
+        createLanes();
+        spawnRandomObject();
+    }
+
+    startBtn.addEventListener('click', () => {
+        startGame();
+    });
+
+    restartBtn.addEventListener('click', () => {
+        location.reload();
+    });
 
     createLanes();
-    spawnRandomObject();
 });
