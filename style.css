@@ -1,0 +1,75 @@
+body {
+    background-color: #f7f7f7;
+    text-align: center;
+}
+
+#game-container {
+    width: 300px;
+    height: 500px;
+    background-color: #333; /* 柏油路 */
+    border: 2px solid black;
+    margin: 50px auto;
+    position: relative;
+    overflow: hidden;
+}
+
+#player-car {
+    width: 70px;
+    height: 110px;
+    position: absolute;
+    bottom: 20px;
+    left: 115px;
+    transition: left 0.1s;
+}
+
+.obstacle {
+    width: 70px; /* 已放大，與玩家車子尺寸相同 */
+    height: 110px; /* 已放大，與玩家車子尺寸相同 */
+    position: absolute;
+    top: -110px; /* 調整生成位置，確保從畫面外開始 */
+}
+
+.obstacle img {
+    width: 100%;
+    height: 100%;
+}
+
+.lane {
+    position: absolute;
+    width: 5px;
+    background-color: white;
+    animation: move-lane 1s linear infinite;
+}
+
+.lane1 { left: 95px; height: 100%; }
+.lane2 { left: 195px; height: 100%; }
+
+.text-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-family: sans-serif;
+    font-size: 16px;
+    color: white;
+}
+
+#controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+#controls button {
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    border: 2px solid #333;
+    border-radius: 5px;
+    background-color: #ddd;
+}
+
+@keyframes move-lane {
+    from { top: 0; }
+    to { top: 50px; }
+}
