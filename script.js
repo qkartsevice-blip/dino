@@ -17,6 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let playerCarPosition = 115;
     playerCar.style.left = playerCarPosition + 'px';
 
+    // 用來追蹤每個車道的物件
+    let laneStatus = {
+        '25': null,
+        '125': null,
+        '225': null
+    };
+
     function createLanes() {
         const lane1 = document.createElement('div');
         const lane2 = document.createElement('div');
@@ -26,14 +33,27 @@ document.addEventListener('DOMContentLoaded', () => {
         gameContainer.appendChild(lane2);
     }
 
+    // 尋找一個隨機且可用的車道
+    function getRandomAvailableLane() {
+        const availableLanes = Object.keys(laneStatus).filter(lane => laneStatus[lane] === null);
+        if (availableLanes.length === 0) {
+            return null; // 如果沒有可用的車道
+        }
+        const randomLane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+        return randomLane;
+    }
+
     function createObstacle() {
+        const lane = getRandomAvailableLane();
+        if (!lane) return;
+
         const obstacle = document.createElement('div');
         obstacle.classList.add('obstacle');
-        const lanes = [25, 125, 225];
-        const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
-        obstacle.style.left = randomLane + 'px';
+        obstacle.style.left = lane + 'px';
         obstacle.innerHTML = '<img src="images/blue-car.png" alt="Obstacle Car">';
         gameContainer.appendChild(obstacle);
+
+        laneStatus[lane] = 'obstacle';
 
         let topPosition = -110;
         function animateObstacle() {
@@ -42,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const playerCarRect = playerCar.getBoundingClientRect();
             const obstacleRect = obstacle.getBoundingClientRect();
             
-            // 定義一個碰撞緩衝區，數值越大，需要重疊越多才算碰撞
             const collisionPadding = 20;
 
             if (
@@ -59,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (topPosition > 500) {
                 obstacle.remove();
+                laneStatus[lane] = null;
                 score++;
                 scoreDisplay.textContent = score;
 
@@ -76,25 +96,67 @@ document.addEventListener('DOMContentLoaded', () => {
         animateObstacle();
     }
 
+    function createCoin() {
+        const lane = getRandomAvailableLane();
+        if (!lane) return;
+
+        const coin = document.createElement('div');
+        coin.classList.add('coin');
+        coin.style.left = lane + 'px';
+        gameContainer.appendChild(coin);
+
+        laneStatus[lane] = 'coin';
+
+        let topPosition = -30;
+        function animateCoin() {
+            if (isGameOver) return;
+
+            const playerCarRect = playerCar.getBoundingClientRect();
+            const coinRect = coin.getBoundingClientRect();
+
+            if (
+                playerCarRect.left < coinRect.right &&
+                playerCarRect.right > coinRect.left &&
+                playerCarRect.top < coinRect.bottom &&
+                playerCarRect.bottom > coinRect.top
+            ) {
+                coin.remove();
+                laneStatus[lane] = null;
+                score += 5;
+                scoreDisplay.textContent = score;
+                return;
+            }
+
+            if (topPosition > 500) {
+                coin.remove();
+                laneStatus[lane] = null;
+                return;
+            }
+
+            topPosition += speed;
+            coin.style.top = topPosition + 'px';
+
+            requestAnimationFrame(animateCoin);
+        }
+        animateCoin();
+    }
+
     // 玩家車移動函數
     function movePlayerCar(direction) {
         if (isGameOver) return;
     
-        // 根據方向更新位置變數
         if (direction === 'left') {
             playerCarPosition -= 100;
         } else if (direction === 'right') {
             playerCarPosition += 100;
         }
     
-        // 確保車子不會超出左右邊界
         if (playerCarPosition < 25) {
             playerCarPosition = 25;
         } else if (playerCarPosition > 225) {
             playerCarPosition = 225;
         }
     
-        // 將新的位置值應用到 CSS
         playerCar.style.left = playerCarPosition + 'px';
     }
 
@@ -116,13 +178,21 @@ document.addEventListener('DOMContentLoaded', () => {
         movePlayerCar('right');
     });
 
-    function spawnObstacles() {
+    // 隨機生成物件（障礙物或金幣）
+    function spawnRandomObject() {
         if (isGameOver) return;
-        createObstacle();
-        let currentInterval = Math.max(1000, 1500 - (score * 10)); 
-        setTimeout(spawnObstacles, currentInterval);
+
+        // 隨機決定生成障礙物或金幣 (例如 70% 機率生成障礙物)
+        if (Math.random() > 0.3) {
+            createObstacle();
+        } else {
+            createCoin();
+        }
+
+        const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
+        setTimeout(spawnRandomObject, nextSpawnInterval);
     }
 
     createLanes();
-    spawnObstacles();
+    spawnRandomObject();
 });
