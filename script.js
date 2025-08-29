@@ -1,5 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // 🏆🏆🏆 你從 Firebase 複製的設定程式碼 🏆🏆🏆
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdU5ur3-Y_N18C-XowZYOtMBW5tMkywBQ",
+      authDomain: "cargameleaderboard-c5420.firebaseapp.com",
+      projectId: "cargameleaderboard-c5420",
+      storageBucket: "cargameleaderboard-c5420.firebasestorage.app",
+      messagingSenderId: "1084071115619",
+      appId: "1:1084071115619:web:630750143f56546e65f156",
+      measurementId: "G-2CES65P4N3"
+    };
+
+    // 初始化 Firebase 和 Firestore
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     const gameContainer = document.getElementById('game-container');
     const playerCar = document.getElementById('player-car');
     const scoreDisplay = document.getElementById('score');
@@ -12,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const highScoresList = document.getElementById('high-scores-list');
     const restartBtn = document.getElementById('restart-btn');
     const usernameInput = document.getElementById('username');
+    const loadingSpinner = document.getElementById('loading-spinner');
 
     let score = 0;
     let baseSpeed = 5;
@@ -20,11 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let speedInterval = 10;
     let isGameOver = false;
 
-    // 玩家車子的初始位置變數，確保程式能正確追蹤它的位置
     let playerCarPosition = 115;
     playerCar.style.left = playerCarPosition + 'px';
 
-    // 用來追蹤每個車道的物件
     let laneStatus = {
         '25': null,
         '125': null,
@@ -32,28 +46,38 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // 處理最高分數的函式
-    function getHighScores() {
-        return JSON.parse(localStorage.getItem('highScores')) || [];
+    async function saveScoreToDB(currentScore, username) {
+        try {
+            await db.collection("highScores").add({
+                name: username || '匿名玩家',
+                score: currentScore,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            console.log("分數已成功上傳！");
+        } catch (e) {
+            console.error("上傳分數時發生錯誤: ", e);
+        }
     }
 
-    function saveHighScores(scores) {
-        localStorage.setItem('highScores', JSON.stringify(scores));
+    async function getHighScoresFromDB() {
+        try {
+            loadingSpinner.classList.remove('hidden');
+            const scoresRef = db.collection("highScores").orderBy("score", "desc").limit(7);
+            const snapshot = await scoresRef.get();
+            const scores = snapshot.docs.map(doc => doc.data());
+            loadingSpinner.classList.add('hidden');
+            return scores;
+        } catch (e) {
+            console.error("讀取排行榜時發生錯誤: ", e);
+            loadingSpinner.classList.add('hidden');
+            return [];
+        }
     }
 
-    function updateHighScores(currentScore, username) {
-        let scores = getHighScores();
-        const newScore = { score: currentScore, name: username || '匿名玩家' };
-        scores.push(newScore);
-        scores.sort((a, b) => b.score - a.score);
-        scores = scores.slice(0, 7); // 修正：只保留前 7 名
-        saveHighScores(scores);
-        return scores;
-    }
-
-    function displayHighScores() {
-        const scores = getHighScores();
+    async function displayHighScores() {
+        const scores = await getHighScoresFromDB();
         highScoresList.innerHTML = '';
-        for (let i = 0; i < 7; i++) { // 修正：迴圈 7 次
+        for (let i = 0; i < 7; i++) {
             const li = document.createElement('li');
 
             if (scores[i]) {
@@ -61,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 trophy.classList.add('trophy');
 
                 if (i === 0) {
-                    trophy.textContent = '🥇'; 
+                    trophy.textContent = '🥇';
                 } else if (i === 1) {
                     trophy.textContent = '🥈';
                 } else if (i === 2) {
@@ -90,10 +114,10 @@ document.addEventListener('DOMContentLoaded', () => {
         finalScoreDisplay.textContent = score;
 
         const username = usernameInput.value;
-        updateHighScores(score, username);
+        saveScoreToDB(score, username);
         displayHighScores();
     }
-
+    
     function createLanes() {
         const lane1 = document.createElement('div');
         const lane2 = document.createElement('div');
@@ -102,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameContainer.appendChild(lane1);
         gameContainer.appendChild(lane2);
     }
-
+    
     function getRandomAvailableLane() {
         const availableLanes = Object.keys(laneStatus).filter(lane => laneStatus[lane] === null);
         if (availableLanes.length === 0) {
@@ -111,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const randomLane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
         return randomLane;
     }
-
+    
     function showScoreFeedback(value, type) {
         const feedback = document.createElement('div');
         feedback.textContent = (value > 0 ? '+' : '') + value;
