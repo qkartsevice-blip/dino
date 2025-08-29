@@ -27,7 +27,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* 使用者名稱輸入框樣式 */
+/* 新增：使用者名稱輸入框樣式 */
 #intro-overlay label, #intro-overlay input {
     font-size: 16px;
     margin-bottom: 10px;
@@ -116,19 +116,16 @@ body {
 
 #high-scores-list li {
     margin: 5px 0;
-    /* 啟用 Flexbox 讓獎盃和文字可以對齊 */
     display: flex;
-    align-items: center; /* 垂直居中 */
-    justify-content: flex-start; /* 靠左對齊 */
-    /* 為獎盃騰出空間 */
-    padding-left: 25px; 
-    position: relative; /* 讓獎盃可以相對於 li 定位 */
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 25px;
+    position: relative;
 }
 
 /* 獎盃樣式 */
 .trophy {
     font-size: 20px;
-    /* 讓獎盃絕對定位，突出在左側 */
     position: absolute;
     left: 0;
 }
