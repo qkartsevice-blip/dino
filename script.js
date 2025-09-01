@@ -1,24 +1,5 @@
-// 🏆🏆🏆 你從 Firebase 複製的設定程式碼 🏆🏆🏆
-const firebaseConfig = {
-  apiKey: "AIzaSyDdU5ur3-Y_N18C-XowZYOtMBW5tMkywBQ",
-  authDomain: "cargameleaderboard-c5420.firebaseapp.com",
-  projectId: "cargameleaderboard-c5420",
-  storageBucket: "cargameleaderboard-c5420.firebasestorage.app",
-  messagingSenderId: "1084071115619",
-  appId: "1:1084071115619:web:630750143f56546e65f156",
-  measurementId: "G-2CES65P4N3"
-};
-
-// 初始化 Firebase 和 Firestore
-if (typeof firebase !== 'undefined' && firebaseConfig.projectId && firebaseConfig.projectId !== "YOUR_PROJECT_ID") {
-    firebase.initializeApp(firebaseConfig);
-    var db = firebase.firestore();
-} else {
-    var db = null;
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     const gameContainer = document.getElementById('game-container');
     const playerCar = document.getElementById('player-car');
     const scoreDisplay = document.getElementById('score');
@@ -49,45 +30,27 @@ document.addEventListener('DOMContentLoaded', () => {
         '225': null
     };
 
-    // 處理最高分數的函式（直接與 Firebase 互動）
-    async function saveScoreToDB(currentScore, username) {
-        if (!db) {
-            console.error("Firebase 資料庫未初始化。無法儲存分數。");
-            return;
-        }
-        try {
-            await db.collection("highScores").add({
-                name: username || '匿名玩家',
-                score: currentScore,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            console.log("分數已成功上傳！");
-        } catch (e) {
-            console.error("上傳分數時發生錯誤: ", e);
-        }
+    // 處理最高分數的函式（使用本地 localStorage）
+    function getHighScores() {
+        return JSON.parse(localStorage.getItem('highScores')) || [];
     }
 
-    async function getHighScoresFromDB() {
-        if (!db) {
-            console.error("Firebase 資料庫未初始化。無法讀取排行榜。");
-            return [];
-        }
-        try {
-            loadingSpinner.classList.remove('hidden');
-            const scoresRef = db.collection("highScores").orderBy("score", "desc").limit(7);
-            const snapshot = await scoresRef.get();
-            const scores = snapshot.docs.map(doc => doc.data());
-            loadingSpinner.classList.add('hidden');
-            return scores;
-        } catch (e) {
-            console.error("讀取排行榜時發生錯誤: ", e);
-            loadingSpinner.classList.add('hidden');
-            return [];
-        }
+    function saveHighScores(scores) {
+        localStorage.setItem('highScores', JSON.stringify(scores));
     }
 
-    async function displayHighScores() {
-        const scores = await getHighScoresFromDB();
+    function updateHighScores(currentScore, username) {
+        let scores = getHighScores();
+        const newScore = { score: currentScore, name: username || '匿名玩家' };
+        scores.push(newScore);
+        scores.sort((a, b) => b.score - a.score);
+        scores = scores.slice(0, 7);
+        saveHighScores(scores);
+        return scores;
+    }
+
+    function displayHighScores() {
+        const scores = getHighScores();
         highScoresList.innerHTML = '';
         for (let i = 0; i < 7; i++) {
             const li = document.createElement('li');
@@ -126,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         finalScoreDisplay.textContent = score;
 
         const username = usernameInput.value;
-        saveScoreToDB(score, username);
+        updateHighScores(score, username);
         displayHighScores();
     }
     
