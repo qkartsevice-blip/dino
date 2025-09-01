@@ -10,15 +10,12 @@ const firebaseConfig = {
 };
 
 // 初始化 Firebase 和 Firestore
-// 修正：移除舊的條件判斷，直接初始化
 if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
 } else {
-    // 如果沒有 Firebase，遊戲將無法使用全域排行榜功能
     var db = null;
 }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -35,6 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const restartBtn = document.getElementById('restart-btn');
     const usernameInput = document.getElementById('username');
     const loadingSpinner = document.getElementById('loading-spinner');
+    const couponScreen = document.getElementById('coupon-screen');
+    const couponRestartBtn = document.getElementById('coupon-restart-btn');
+    const couponCodeNumber = document.getElementById('coupon-code-number');
+
 
     let score = 0;
     let baseSpeed = 5;
@@ -120,17 +121,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 新增：取得獨一無二的優惠券編號
+    async function getUniqueCouponCode() {
+        if (!db) {
+            couponCodeNumber.textContent = '無法連線到資料庫';
+            console.error("Firebase 資料庫未初始化。無法生成優惠券編號。");
+            return;
+        }
+        
+        const counterRef = db.collection('counters').doc('coupon');
+        try {
+            const newCouponNumber = await db.runTransaction(async (transaction) => {
+                const doc = await transaction.get(counterRef);
+                if (!doc.exists) {
+                    transaction.set(counterRef, { couponNumber: 1 });
+                    return 1;
+                }
+                const newNumber = doc.data().couponNumber + 1;
+                transaction.update(counterRef, { couponNumber: newNumber });
+                return newNumber;
+            });
+            // 格式化編號，確保有兩位數
+            couponCodeNumber.textContent = newCouponNumber.toString().padStart(2, '0');
+        } catch (e) {
+            console.error("生成優惠券編號時發生錯誤: ", e);
+            couponCodeNumber.textContent = '錯誤';
+        }
+    }
+
     function endGame() {
         isGameOver = true;
         
         introOverlay.classList.add('hidden');
-        gameOverScreen.classList.remove('hidden');
-
-        finalScoreDisplay.textContent = score;
-
-        const username = usernameInput.value;
-        saveScoreToDB(score, username);
-        displayHighScores();
+        
+        if (score >= 10) {
+            couponScreen.classList.remove('hidden');
+            // 遊戲結束時同時發送分數和取得優惠券編號
+            const username = usernameInput.value;
+            saveScoreToDB(score, username);
+            getUniqueCouponCode();
+        } else {
+            gameOverScreen.classList.remove('hidden');
+            finalScoreDisplay.textContent = score;
+            const username = usernameInput.value;
+            saveScoreToDB(score, username);
+            displayHighScores();
+        }
     }
     
     function createLanes() {
@@ -381,6 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function startGame() {
         introOverlay.classList.add('hidden');
         gameOverScreen.classList.add('hidden');
+        couponScreen.classList.add('hidden');
         createLanes();
         spawnRandomObject();
     }
@@ -390,6 +427,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     restartBtn.addEventListener('click', () => {
+        location.reload();
+    });
+
+    couponRestartBtn.addEventListener('click', () => {
         location.reload();
     });
 
