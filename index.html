@@ -3,6 +3,7 @@
 <head>
     <title>小汽車遊戲</title>
     <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 </head>
@@ -13,7 +14,7 @@
             <label for="username">輸入你的名字:</label>
             <input type="text" id="username" placeholder="匿名玩家" maxlength="10">
             <div id="intro-text-box">
-                <p class="main-rules">左右移動或點擊虛擬鍵盤</p>
+                <p class="main-rules">點擊螢幕左半邊或右半邊來移動</p>
                 <p class="main-rules">避開藍色車輛及坑洞</p>
                 <br>
                 <p class="sub-rules">收集金幣 (+5分)</p>
@@ -37,11 +38,6 @@
         <div class="text-overlay">分數: <span id="score">0</span></div>
     </div>
     
-    <div id="controls">
-        <button id="left-btn">左</button>
-        <button id="right-btn">右</button>
-    </div>
-
     <script src="script.js"></script>
 </body>
 </html>
