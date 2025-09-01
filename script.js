@@ -10,15 +10,12 @@ const firebaseConfig = {
 };
 
 // 初始化 Firebase 和 Firestore
-// 修正：移除舊的條件判斷，直接初始化
-if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
+if (typeof firebase !== 'undefined' && firebaseConfig.projectId && firebaseConfig.projectId !== "YOUR_PROJECT_ID") {
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
 } else {
-    // 如果沒有 Firebase，遊戲將無法使用全域排行榜功能
     var db = null;
 }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -375,3 +372,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
+        setTimeout(spawnRandomObject, nextSpawnInterval);
+    }
+    
+    function startGame() {
+        introOverlay.classList.add('hidden');
+        gameOverScreen.classList.add('hidden');
+        createLanes();
+        spawnRandomObject();
+    }
+
+    startBtn.addEventListener('click', () => {
+        startGame();
+    });
+
+    restartBtn.addEventListener('click', () => {
+        location.reload();
+    });
+
+    createLanes();
+});
