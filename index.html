@@ -3,6 +3,7 @@
 <head>
     <title>小汽車遊戲</title>
     <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 </head>
@@ -31,6 +32,13 @@
             <div id="loading-spinner" class="hidden"></div>
             <ul id="high-scores-list"></ul>
             <button id="restart-btn">重新開始</button>
+        </div>
+        
+        <div id="coupon-screen" class="hidden">
+            <h1>恭喜你獲得折價券！</h1>
+            <p class="coupon-code">優惠碼: Q-Cart-<span id="coupon-code-number">載入中...</span></p>
+            <p>憑此畫面截圖可享九折優惠！</p>
+            <button id="coupon-restart-btn">重新開始</button>
         </div>
 
         <img id="player-car" src="images/red-car.png" alt="Player Car">
