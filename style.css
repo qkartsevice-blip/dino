@@ -199,7 +199,6 @@ body {
     z-index: 10;
 }
 
-/* 實體按鈕的樣式，已還原 */
 #controls {
     display: flex;
     justify-content: center;
