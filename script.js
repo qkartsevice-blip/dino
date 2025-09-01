@@ -10,23 +10,18 @@ const firebaseConfig = {
 };
 
 // 初始化 Firebase 和 Firestore
-// 修正：移除舊的條件判斷，直接初始化
 if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
 } else {
-    // 如果沒有 Firebase，遊戲將無法使用全域排行榜功能
     var db = null;
 }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     
     const gameContainer = document.getElementById('game-container');
     const playerCar = document.getElementById('player-car');
     const scoreDisplay = document.getElementById('score');
-    const leftBtn = document.getElementById('left-btn');
-    const rightBtn = document.getElementById('right-btn');
     const introOverlay = document.getElementById('intro-overlay');
     const startBtn = document.getElementById('start-btn');
     const gameOverScreen = document.getElementById('game-over-screen');
@@ -52,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '225': null
     };
 
-    // 處理最高分數的函式（直接與 Firebase 互動）
+    // 處理最高分數的函式
     async function saveScoreToDB(currentScore, username) {
         if (!db) {
             console.error("Firebase 資料庫未初始化。無法儲存分數。");
