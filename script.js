@@ -154,7 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         introOverlay.classList.add('hidden');
         
-        if (score >= 10) {
+        // 變更：如果分數 >= 100，顯示折價券畫面
+        if (score >= 100) {
             couponScreen.classList.remove('hidden');
             // 遊戲結束時同時發送分數和取得優惠券編號
             const username = usernameInput.value;
