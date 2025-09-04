@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const usernameInput = document.getElementById('username');
     const loadingSpinner = document.getElementById('loading-spinner');
     const couponScreen = document.getElementById('coupon-screen');
-    const couponRestartBtn = document.getElementById('coupon-restart-btn');
+    // 變更：按鈕ID
+    const couponDoneBtn = document.getElementById('coupon-done-btn');
     const couponCodeNumber = document.getElementById('coupon-code-number');
 
 
@@ -430,9 +431,17 @@ document.addEventListener('DOMContentLoaded', () => {
     restartBtn.addEventListener('click', () => {
         location.reload();
     });
-
-    couponRestartBtn.addEventListener('click', () => {
-        location.reload();
+    
+    // 變更：處理新的「我知道了」按鈕
+    couponDoneBtn.addEventListener('click', () => {
+        // 隱藏優惠券畫面
+        couponScreen.classList.add('hidden');
+        // 顯示遊戲結束畫面
+        gameOverScreen.classList.remove('hidden');
+        // 更新並顯示最終分數
+        finalScoreDisplay.textContent = score;
+        // 顯示排行榜
+        displayHighScores();
     });
 
     createLanes();
