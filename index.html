@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Q-cart贏優惠</title>
+    <title>Q-Cart贏優惠</title>
     <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -10,7 +10,7 @@
 <body>
     <div id="game-container">
         <div id="intro-overlay">
-            <h1>Q-cart贏優惠</h1>
+            <h1>Q-Cart贏優惠</h1>
             <label for="username">輸入你的名字:</label>
             <input type="text" id="username" placeholder="匿名玩家" maxlength="10">
             <div id="intro-text-box">
@@ -36,9 +36,11 @@
         
         <div id="coupon-screen" class="hidden">
             <h1>恭喜你獲得折價券！</h1>
-            <p class="coupon-code">編號: Q-Cart <span id="coupon-code-number">載入中...</span></p>
-            <p>截圖畫面可享體驗價100元！</p>
-            <button id="coupon-restart-btn">重新開始</button>
+            <p class="coupon-code">優惠碼: Q-Cart<span id="coupon-code-number">載入中...</span></p>
+            <p>憑此截圖享體驗價100！</p>
+            <br>
+            <p>使用期限至2025/12/31</p>
+            <button id="coupon-done-btn">我知道了</button>
         </div>
 
         <img id="player-car" src="images/red-car.png" alt="Player Car">
@@ -53,4 +55,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
