@@ -33,10 +33,19 @@
             <ul id="high-scores-list"></ul>
             <button id="restart-btn">重新開始</button>
         </div>
+
+        <div id="coupon-offer-screen" class="hidden">
+            <h1>恭喜你達成高分！</h1>
+            <p>是否要領取限量優惠券？</p>
+            <div id="offer-buttons">
+                <button id="get-coupon-btn">是的，我要領取！</button>
+                <button id="decline-coupon-btn">不，謝謝</button>
+            </div>
+        </div>
         
         <div id="coupon-screen" class="hidden">
-            <h1 id="coupon-title">恭喜你獲得折價券！</h1>
-            <p id="coupon-message">優惠碼: Q-Kart-<span id="coupon-code-number">載入中...</span><br>憑此截圖享體驗價100！<br>使用期限至2025/12/31</p>
+            <h1 id="coupon-title"></h1>
+            <p id="coupon-message"></p>
             <button id="coupon-done-btn">我知道了</button>
         </div>
 
@@ -49,9 +58,6 @@
         <button id="right-btn">右</button>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
-
