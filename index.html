@@ -4,8 +4,6 @@
     <title>Q-Cart贏優惠</title>
     <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 </head>
 <body>
     <div id="game-container">
@@ -35,11 +33,8 @@
         </div>
         
         <div id="coupon-screen" class="hidden">
-            <h1>恭喜你獲得折價券！</h1>
-            <p class="coupon-code">優惠碼: Q-Cart<span id="coupon-code-number">載入中...</span></p>
-            <p>憑此截圖享體驗價100！</p>
-            <br>
-            <p>使用期限至2025/12/31</p>
+            <h1 id="coupon-title">恭喜你獲得折價券！</h1>
+            <p id="coupon-message">優惠碼: Q-Cart-<span id="coupon-code-number">載入中...</span><br>憑此截圖享體驗價100！<br>使用期限至2025/12/31</p>
             <button id="coupon-done-btn">我知道了</button>
         </div>
 
@@ -52,6 +47,8 @@
         <button id="right-btn">右</button>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
