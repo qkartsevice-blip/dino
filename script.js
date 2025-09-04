@@ -154,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (newCouponNumber !== null) {
                 const formattedNumber = newCouponNumber.toString().padStart(2, '0');
                 couponTitle.textContent = "恭喜你獲得折價券！";
-                // 修正：新增使用期限
                 couponMessage.innerHTML = `優惠碼: <span class="coupon-code">Q-Cart-${formattedNumber}</span><br>憑此畫面截圖享體驗價100！<br>使用期限至2025/12/31`;
             } else {
                 couponTitle.textContent = "優惠券已全數發放完畢";
@@ -172,7 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         introOverlay.classList.add('hidden');
         
-        if (score >= 100) {
+        // 變更：如果分數 >= 10，顯示折價券畫面
+        if (score >= 10) {
             couponScreen.classList.remove('hidden');
             const username = usernameInput.value;
             saveScoreToDB(score, username);
