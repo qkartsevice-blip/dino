@@ -10,12 +10,15 @@ const firebaseConfig = {
 };
 
 // 初始化 Firebase 和 Firestore
+// 修正：移除舊的條件判斷，直接初始化
 if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
 } else {
+    // 如果沒有 Firebase，遊戲將無法使用全域排行榜功能
     var db = null;
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -33,9 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const usernameInput = document.getElementById('username');
     const loadingSpinner = document.getElementById('loading-spinner');
     const couponScreen = document.getElementById('coupon-screen');
-    // 變更：按鈕ID
     const couponDoneBtn = document.getElementById('coupon-done-btn');
-    const couponCodeNumber = document.getElementById('coupon-code-number');
+    const couponTitle = document.getElementById('coupon-title');
+    const couponMessage = document.getElementById('coupon-message');
 
 
     let score = 0;
@@ -54,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '225': null
     };
 
-    // 處理最高分數的函式（直接與 Firebase 互動）
+    // 處理最高分數的函式
     async function saveScoreToDB(currentScore, username) {
         if (!db) {
             console.error("Firebase 資料庫未初始化。無法儲存分數。");
@@ -125,28 +128,49 @@ document.addEventListener('DOMContentLoaded', () => {
     // 新增：取得獨一無二的優惠券編號
     async function getUniqueCouponCode() {
         if (!db) {
-            couponCodeNumber.textContent = '無法連線到資料庫';
-            console.error("Firebase 資料庫未初始化。無法生成優惠券編號。");
+            couponTitle.textContent = "無法取得優惠碼";
+            couponMessage.textContent = "請檢查連線或稍後再試";
             return;
         }
         
         const counterRef = db.collection('counters').doc('coupon');
         try {
+            // 在 Firestore 中使用交易來確保編號唯一
             const newCouponNumber = await db.runTransaction(async (transaction) => {
                 const doc = await transaction.get(counterRef);
+                const couponLimit = 3; // 優惠券發放上限
+
                 if (!doc.exists) {
+                    // 如果文件不存在，代表是第一次發放
                     transaction.set(counterRef, { couponNumber: 1 });
                     return 1;
                 }
-                const newNumber = doc.data().couponNumber + 1;
+                
+                const currentNumber = doc.data().couponNumber;
+                if (currentNumber >= couponLimit) {
+                    // 如果數量已達上限，不更新計數器並回傳 null
+                    return null;
+                }
+
+                // 數量未達上限，增加計數器
+                const newNumber = currentNumber + 1;
                 transaction.update(counterRef, { couponNumber: newNumber });
                 return newNumber;
             });
-            // 格式化編號，確保有兩位數
-            couponCodeNumber.textContent = newCouponNumber.toString().padStart(2, '0');
+            
+            // 根據回傳的編號更新畫面
+            if (newCouponNumber !== null) {
+                const formattedNumber = newCouponNumber.toString().padStart(2, '0');
+                couponTitle.textContent = "恭喜你獲得折價券！";
+                couponMessage.innerHTML = `優惠碼: <span class="coupon-code">CARGAME100-${formattedNumber}</span><br>憑此優惠碼可享九折優惠！`;
+            } else {
+                couponTitle.textContent = "優惠券已全數發放完畢";
+                couponMessage.textContent = "請下次再來挑戰！";
+            }
         } catch (e) {
             console.error("生成優惠券編號時發生錯誤: ", e);
-            couponCodeNumber.textContent = '錯誤';
+            couponTitle.textContent = "無法取得優惠碼";
+            couponMessage.textContent = "請檢查連線或稍後再試";
         }
     }
 
@@ -313,136 +337,3 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!lane) return;
 
         const pothole = document.createElement('div');
-        pothole.classList.add('pothole');
-        pothole.style.left = lane + 'px';
-        gameContainer.appendChild(pothole);
-
-        laneStatus[lane] = 'pothole';
-
-        let topPosition = -40;
-        function animatePothole() {
-            if (isGameOver) return;
-
-            const playerCarRect = playerCar.getBoundingClientRect();
-            const potholeRect = pothole.getBoundingClientRect();
-
-            if (
-                playerCarRect.left < potholeRect.right &&
-                playerCarRect.right > potholeRect.left &&
-                playerCarRect.top < potholeRect.bottom &&
-                playerCarRect.bottom > potholeRect.top
-            ) {
-                pothole.remove();
-                laneStatus[lane] = null;
-                score -= 5;
-                scoreDisplay.textContent = score;
-                showScoreFeedback(-5, 'negative');
-                shakeScreen();
-                
-                if (score < 0) {
-                    endGame();
-                    return;
-                }
-                return;
-            }
-
-            if (topPosition > 500) {
-                pothole.remove();
-                laneStatus[lane] = null;
-                return;
-            }
-            
-            topPosition += speed;
-            pothole.style.top = topPosition + 'px';
-
-            requestAnimationFrame(animatePothole);
-        }
-        animatePothole();
-    }
-
-    function movePlayerCar(direction) {
-        if (isGameOver) return;
-    
-        if (direction === 'left') {
-            playerCarPosition -= 100;
-        } else if (direction === 'right') {
-            playerCarPosition += 100;
-        }
-    
-        if (playerCarPosition < 25) {
-            playerCarPosition = 25;
-        } else if (playerCarPosition > 225) {
-            playerCarPosition = 225;
-        }
-    
-        playerCar.style.left = playerCarPosition + 'px';
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            if (e.code === 'ArrowLeft') {
-                movePlayerCar('left');
-            } else if (e.code === 'ArrowRight') {
-                movePlayerCar('right');
-            }
-        }
-    });
-
-    leftBtn.addEventListener('click', () => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            movePlayerCar('left');
-        }
-    });
-
-    rightBtn.addEventListener('click', () => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            movePlayerCar('right');
-        }
-    });
-
-    function spawnRandomObject() {
-        if (isGameOver || !introOverlay.classList.contains('hidden')) return;
-
-        const randomNumber = Math.random();
-        if (randomNumber < 0.6) {
-            createObstacle();
-        } else if (randomNumber < 0.8) {
-            createCoin();
-        } else {
-            createPothole();
-        }
-
-        const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
-        setTimeout(spawnRandomObject, nextSpawnInterval);
-    }
-    
-    function startGame() {
-        introOverlay.classList.add('hidden');
-        gameOverScreen.classList.add('hidden');
-        couponScreen.classList.add('hidden');
-        createLanes();
-        spawnRandomObject();
-    }
-
-    startBtn.addEventListener('click', () => {
-        startGame();
-    });
-
-    restartBtn.addEventListener('click', () => {
-        location.reload();
-    });
-    
-    // 變更：處理新的「我知道了」按鈕
-    couponDoneBtn.addEventListener('click', () => {
-        // 隱藏優惠券畫面
-        couponScreen.classList.add('hidden');
-        // 顯示遊戲結束畫面
-        gameOverScreen.classList.remove('hidden');
-        // 更新並顯示最終分數
-        finalScoreDisplay.textContent = score;
-        // 顯示排行榜
-        displayHighScores();
-    });
-
-    createLanes();
-});
