@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const couponTitle = document.getElementById('coupon-title');
     const couponMessage = document.getElementById('coupon-message');
 
+
     let score = 0;
     let baseSpeed = 5;
     let speed = baseSpeed;
@@ -171,8 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         introOverlay.classList.add('hidden');
         
-        // 變更：如果分數 >= 10，顯示折價券畫面
-        if (score >= 10) {
+        if (score >= 100) {
             couponScreen.classList.remove('hidden');
             const username = usernameInput.value;
             saveScoreToDB(score, username);
@@ -339,120 +339,4 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isGameOver) return;
 
             const playerCarRect = playerCar.getBoundingClientRect();
-            const potholeRect = pothole.getBoundingClientRect();
-
-            if (
-                playerCarRect.left < potholeRect.right &&
-                playerCarRect.right > potholeRect.left &&
-                playerCarRect.top < potholeRect.bottom &&
-                playerCarRect.bottom > potholeRect.top
-            ) {
-                pothole.remove();
-                laneStatus[lane] = null;
-                score -= 5;
-                scoreDisplay.textContent = score;
-                showScoreFeedback(-5, 'negative');
-                shakeScreen();
-                
-                if (score < 0) {
-                    endGame();
-                    return;
-                }
-                return;
-            }
-
-            if (topPosition > 500) {
-                pothole.remove();
-                laneStatus[lane] = null;
-                return;
-            }
-            
-            topPosition += speed;
-            pothole.style.top = topPosition + 'px';
-
-            requestAnimationFrame(animatePothole);
-        }
-        animatePothole();
-    }
-
-    function movePlayerCar(direction) {
-        if (isGameOver) return;
-    
-        if (direction === 'left') {
-            playerCarPosition -= 100;
-        } else if (direction === 'right') {
-            playerCarPosition += 100;
-        }
-    
-        if (playerCarPosition < 25) {
-            playerCarPosition = 25;
-        } else if (playerCarPosition > 225) {
-            playerCarPosition = 225;
-        }
-    
-        playerCar.style.left = playerCarPosition + 'px';
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            if (e.code === 'ArrowLeft') {
-                movePlayerCar('left');
-            } else if (e.code === 'ArrowRight') {
-                movePlayerCar('right');
-            }
-        }
-    });
-
-    leftBtn.addEventListener('click', () => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            movePlayerCar('left');
-        }
-    });
-
-    rightBtn.addEventListener('click', () => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            movePlayerCar('right');
-        }
-    });
-
-    function spawnRandomObject() {
-        if (isGameOver || !introOverlay.classList.contains('hidden')) return;
-
-        const randomNumber = Math.random();
-        if (randomNumber < 0.6) {
-            createObstacle();
-        } else if (randomNumber < 0.8) {
-            createCoin();
-        } else {
-            createPothole();
-        }
-
-        const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
-        setTimeout(spawnRandomObject, nextSpawnInterval);
-    }
-    
-    function startGame() {
-        introOverlay.classList.add('hidden');
-        gameOverScreen.classList.add('hidden');
-        couponScreen.classList.add('hidden');
-        createLanes();
-        spawnRandomObject();
-    }
-
-    startBtn.addEventListener('click', () => {
-        startGame();
-    });
-
-    restartBtn.addEventListener('click', () => {
-        location.reload();
-    });
-
-    couponDoneBtn.addEventListener('click', () => {
-        couponScreen.classList.add('hidden');
-        gameOverScreen.classList.remove('hidden');
-        finalScoreDisplay.textContent = score;
-        displayHighScores();
-    });
-
-    createLanes();
-});
+            const pothole
