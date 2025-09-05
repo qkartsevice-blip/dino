@@ -20,7 +20,7 @@ if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
 document.addEventListener('DOMContentLoaded', () => {
     
     const gameContainer = document.getElementById('game-container');
-    const playerCar = document.getElementById('player-car'); // 修正：移除多餘的 document =
+    const playerCar = document.getElementById('player-car');
     const scoreDisplay = document.getElementById('score');
     const leftBtn = document.getElementById('left-btn');
     const rightBtn = document.getElementById('right-btn');
@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const couponOfferScreen = document.getElementById('coupon-offer-screen');
     const getCouponBtn = document.getElementById('get-coupon-btn');
     const declineCouponBtn = document.getElementById('decline-coupon-btn');
+
 
     let score = 0;
     let baseSpeed = 5;
@@ -223,30 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gameContainer.classList.remove('shake-animation');
         }, { once: true });
     }
-    
-    // 修正：新增測試模式邏輯
-    function spawnRandomObject() {
-        if (isGameOver || !introOverlay.classList.contains('hidden')) return;
 
-        const username = usernameInput.value.toLowerCase();
-        if (username === '測試測試a') {
-            // 只生成金幣
-            createCoin();
-        } else {
-            // 正常遊戲模式
-            const randomNumber = Math.random();
-            if (randomNumber < 0.6) {
-                createObstacle();
-            } else if (randomNumber < 0.8) {
-                createCoin();
-            } else {
-                createPothole();
-            }
-        }
-        const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
-        setTimeout(spawnRandomObject, nextSpawnInterval);
-    }
-    
     function createObstacle() {
         const lane = getRandomAvailableLane();
         if (!lane) return;
@@ -436,6 +414,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    function spawnRandomObject() {
+        if (isGameOver || !introOverlay.classList.contains('hidden')) return;
+
+        const randomNumber = Math.random();
+        if (randomNumber < 0.6) {
+            createObstacle();
+        } else if (randomNumber < 0.8) {
+            createCoin();
+        } else {
+            createPothole();
+        }
+
+        const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
+        setTimeout(spawnRandomObject, nextSpawnInterval);
+    }
+    
     function startGame() {
         introOverlay.classList.add('hidden');
         gameOverScreen.classList.add('hidden');
