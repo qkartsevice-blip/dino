@@ -36,11 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const couponDoneBtn = document.getElementById('coupon-done-btn');
     const couponTitle = document.getElementById('coupon-title');
     const couponMessage = document.getElementById('coupon-message');
-    // 新增：優惠券提供畫面按鈕
-    const couponOfferScreen = document.getElementById('coupon-offer-screen');
-    const getCouponBtn = document.getElementById('get-coupon-btn');
-    const declineCouponBtn = document.getElementById('decline-coupon-btn');
-
 
     let score = 0;
     let baseSpeed = 5;
@@ -139,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 在 Firestore 中使用交易來確保編號唯一
             const newCouponNumber = await db.runTransaction(async (transaction) => {
                 const doc = await transaction.get(counterRef);
-                const couponLimit = 2; // 優惠券發放上限
+                const couponLimit = 100; // 優惠券發放上限
 
                 if (!doc.exists) {
                     transaction.set(counterRef, { couponNumber: 1 });
@@ -176,8 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         introOverlay.classList.add('hidden');
         
-        if (score >= 150) { // 變更：分數門檻為 150
-            couponOfferScreen.classList.remove('hidden'); // 顯示優惠券詢問畫面
+        if (score >= 150) {
+            couponScreen.classList.remove('hidden');
+            const username = usernameInput.value;
+            saveScoreToDB(score, username);
+            getUniqueCouponCode();
         } else {
             gameOverScreen.classList.remove('hidden');
             finalScoreDisplay.textContent = score;
@@ -436,7 +434,6 @@ document.addEventListener('DOMContentLoaded', () => {
         introOverlay.classList.add('hidden');
         gameOverScreen.classList.add('hidden');
         couponScreen.classList.add('hidden');
-        couponOfferScreen.classList.add('hidden'); // 確保新的優惠券詢問畫面也隱藏
         createLanes();
         spawnRandomObject();
     }
@@ -448,31 +445,11 @@ document.addEventListener('DOMContentLoaded', () => {
     restartBtn.addEventListener('click', () => {
         location.reload();
     });
-    
+
     couponDoneBtn.addEventListener('click', () => {
         couponScreen.classList.add('hidden');
         gameOverScreen.classList.remove('hidden');
         finalScoreDisplay.textContent = score;
-        displayHighScores();
-    });
-
-    // 新增：處理優惠券提供畫面的按鈕點擊事件
-    getCouponBtn.addEventListener('click', () => {
-        couponOfferScreen.classList.add('hidden');
-        couponScreen.classList.remove('hidden');
-        // 遊戲結束時同時發送分數和取得優惠券編號
-        const username = usernameInput.value;
-        saveScoreToDB(score, username);
-        getUniqueCouponCode();
-    });
-
-    declineCouponBtn.addEventListener('click', () => {
-        couponOfferScreen.classList.add('hidden');
-        gameOverScreen.classList.remove('hidden');
-        finalScoreDisplay.textContent = score;
-        // 玩家放棄優惠券，但分數仍然上傳
-        const username = usernameInput.value;
-        saveScoreToDB(score, username);
         displayHighScores();
     });
 
