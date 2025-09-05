@@ -20,7 +20,7 @@ if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
 document.addEventListener('DOMContentLoaded', () => {
     
     const gameContainer = document.getElementById('game-container');
-    const playerCar = document = document.getElementById('player-car');
+    const playerCar = document.getElementById('player-car');
     const scoreDisplay = document.getElementById('score');
     const leftBtn = document.getElementById('left-btn');
     const rightBtn = document.getElementById('right-btn');
@@ -223,30 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
             gameContainer.classList.remove('shake-animation');
         }, { once: true });
     }
-
-    // 修正：新增測試模式邏輯
-    function spawnRandomObject() {
-        if (isGameOver || !introOverlay.classList.contains('hidden')) return;
-
-        const username = usernameInput.value.toLowerCase();
-        if (username === '測試測試a') {
-            // 只生成金幣
-            createCoin();
-        } else {
-            // 正常遊戲模式
-            const randomNumber = Math.random();
-            if (randomNumber < 0.6) {
-                createObstacle();
-            } else if (randomNumber < 0.8) {
-                createCoin();
-            } else {
-                createPothole();
-            }
-        }
-
-        const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
-        setTimeout(spawnRandomObject, nextSpawnInterval);
-    }
     
     function createObstacle() {
         const lane = getRandomAvailableLane();
@@ -426,57 +402,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     leftBtn.addEventListener('click', () => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            movePlayerCar('left');
-        }
-    });
-
-    rightBtn.addEventListener('click', () => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            movePlayerCar('right');
-        }
-    });
-
-    function startGame() {
-        introOverlay.classList.add('hidden');
-        gameOverScreen.classList.add('hidden');
-        couponScreen.classList.add('hidden');
-        couponOfferScreen.classList.add('hidden');
-        createLanes();
-        spawnRandomObject();
-    }
-
-    startBtn.addEventListener('click', () => {
-        startGame();
-    });
-
-    restartBtn.addEventListener('click', () => {
-        location.reload();
-    });
-    
-    getCouponBtn.addEventListener('click', () => {
-        couponOfferScreen.classList.add('hidden');
-        couponScreen.classList.remove('hidden');
-        const username = usernameInput.value;
-        saveScoreToDB(score, username);
-        getUniqueCouponCode();
-    });
-
-    declineCouponBtn.addEventListener('click', () => {
-        couponOfferScreen.classList.add('hidden');
-        gameOverScreen.classList.remove('hidden');
-        finalScoreDisplay.textContent = score;
-        const username = usernameInput.value;
-        saveScoreToDB(score, username);
-        displayHighScores();
-    });
-
-    couponDoneBtn.addEventListener('click', () => {
-        couponScreen.classList.add('hidden');
-        gameOverScreen.classList.remove('hidden');
-        finalScoreDisplay.textContent = score;
-        displayHighScores();
-    });
-
-    createLanes();
-});
+        if (!is
