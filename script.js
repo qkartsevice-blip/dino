@@ -20,7 +20,7 @@ if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
 document.addEventListener('DOMContentLoaded', () => {
     
     const gameContainer = document.getElementById('game-container');
-    const playerCar = document.getElementById('player-car');
+    const playerCar = document.getElementById('player-car'); // 修正：移除多餘的 document =
     const scoreDisplay = document.getElementById('score');
     const leftBtn = document.getElementById('left-btn');
     const rightBtn = document.getElementById('right-btn');
@@ -224,6 +224,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { once: true });
     }
     
+    // 修正：新增測試模式邏輯
+    function spawnRandomObject() {
+        if (isGameOver || !introOverlay.classList.contains('hidden')) return;
+
+        const username = usernameInput.value.toLowerCase();
+        if (username === '測試測試a') {
+            // 只生成金幣
+            createCoin();
+        } else {
+            // 正常遊戲模式
+            const randomNumber = Math.random();
+            if (randomNumber < 0.6) {
+                createObstacle();
+            } else if (randomNumber < 0.8) {
+                createCoin();
+            } else {
+                createPothole();
+            }
+        }
+        const nextSpawnInterval = Math.max(800, 1500 - (score * 10));
+        setTimeout(spawnRandomObject, nextSpawnInterval);
+    }
+    
     function createObstacle() {
         const lane = getRandomAvailableLane();
         if (!lane) return;
@@ -327,79 +350,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const pothole = document.createElement('div');
         pothole.classList.add('pothole');
-        pothole.style.left = lane + 'px';
-        gameContainer.appendChild(pothole);
-
-        laneStatus[lane] = 'pothole';
-
-        let topPosition = -40;
-        function animatePothole() {
-            if (isGameOver) return;
-
-            const playerCarRect = playerCar.getBoundingClientRect();
-            const potholeRect = pothole.getBoundingClientRect();
-
-            if (
-                playerCarRect.left < potholeRect.right &&
-                playerCarRect.right > potholeRect.left &&
-                playerCarRect.top < potholeRect.bottom &&
-                playerCarRect.bottom > potholeRect.top
-            ) {
-                pothole.remove();
-                laneStatus[lane] = null;
-                score -= 5;
-                scoreDisplay.textContent = score;
-                showScoreFeedback(-5, 'negative');
-                shakeScreen();
-                
-                if (score < 0) {
-                    endGame();
-                    return;
-                }
-                return;
-            }
-
-            if (topPosition > 500) {
-                pothole.remove();
-                laneStatus[lane] = null;
-                return;
-            }
-            
-            topPosition += speed;
-            pothole.style.top = topPosition + 'px';
-
-            requestAnimationFrame(animatePothole);
-        }
-        animatePothole();
-    }
-
-    function movePlayerCar(direction) {
-        if (isGameOver) return;
-    
-        if (direction === 'left') {
-            playerCarPosition -= 100;
-        } else if (direction === 'right') {
-            playerCarPosition += 100;
-        }
-    
-        if (playerCarPosition < 25) {
-            playerCarPosition = 25;
-        } else if (playerCarPosition > 225) {
-            playerCarPosition = 225;
-        }
-    
-        playerCar.style.left = playerCarPosition + 'px';
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (!isGameOver && introOverlay.classList.contains('hidden')) {
-            if (e.code === 'ArrowLeft') {
-                movePlayerCar('left');
-            } else if (e.code === 'ArrowRight') {
-                movePlayerCar('right');
-            }
-        }
-    });
-
-    leftBtn.addEventListener('click', () => {
-        if (!is
+        p
