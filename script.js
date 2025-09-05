@@ -20,7 +20,7 @@ if (typeof firebase !== 'undefined' && firebaseConfig.projectId) {
 document.addEventListener('DOMContentLoaded', () => {
     
     const gameContainer = document.getElementById('game-container');
-    const playerCar = document.getElementById('player-car');
+    const playerCar = document = document.getElementById('player-car');
     const scoreDisplay = document.getElementById('score');
     const leftBtn = document.getElementById('left-btn');
     const rightBtn = document.getElementById('right-btn');
@@ -134,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const counterRef = db.collection('counters').doc('coupon');
         try {
-            // 在 Firestore 中使用交易來確保編號唯一
             const newCouponNumber = await db.runTransaction(async (transaction) => {
                 const doc = await transaction.get(counterRef);
                 const couponLimit = 100; // 優惠券發放上限
@@ -195,17 +194,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function getRandomAvailableLane() {
-        const availableLanes = Object.keys(laneStatus).filter(lane => laneStatus[lane] === null);
-        if (availableLanes.length === 0) {
-            return null;
-        }
-        const randomLane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
-        return randomLane;
-    }
-    
-    function showScoreFeedback(value, type) {
-        const feedback = document.createElement('div');
-        feedback.textContent = (value > 0 ? '+' : '') + value;
-        feedback.classList.add('score-feedback', type === 'positive' ? 'positive' : 'negative');
-
-        feedback.style.left = (playerCar.offsetLeft +
+        const availableLanes = Object.keys(
